@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BEESTOCK</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; border-radius:0 !important; }
+body { background:#000; color:#fff; font-family:"Malgun Gothic","맑은 고딕",sans-serif; overflow-x:hidden; }
+.container { display:flex; width:100vw; height:100vh; }
+.sidebar { width:260px; background:#000; display:flex; flex-direction:column; border-right:1px solid #333; }
+.logo { height:60px; background:#000; color:#fff; font-size:26px; font-weight:900; display:flex; align-items:center; justify-content:center; letter-spacing:1px; }
+.menu-list { display:flex; flex-direction:column; }
+.menu-item { background:#f2b200; color:#000; text-decoration:none; font-size:18px; font-weight:900; text-align:center; padding:11px 0; margin:4px 6px; border:1px solid #000; display:block; }
+.ad-banner { margin-top:auto; background:#fff; color:#000; padding:30px 10px; text-align:center; font-weight:900; line-height:1.4; font-size:20px; }
+.ad-banner .red-text { color:#ff0000; font-size:42px; display:block; line-height:1.1; }
+.main-content { flex:1; display:flex; flex-direction:column; }
+.top-bar { height:60px; background:#f2b200; display:flex; align-items:center; justify-content:center; position:relative; }
+.search-box { border:2px solid #000; padding:4px 60px; font-size:24px; font-weight:900; color:#000; }
+.window-ctrl { position:absolute; right:10px; display:flex; gap:5px; }
+.window-ctrl div { width:24px; height:24px; background:#000; }
+.table-container { flex:1; overflow:auto; }
+table { width:100%; border-collapse:collapse; font-size:15px; }
+thead th { background:#333; color:#fff; padding:10px 8px; text-align:left; border:1px solid #1a1a1a; font-weight:normal; }
+tbody td { padding:8px; border:1px solid #1a1a1a; font-weight:700; }
+.stock-name { color:#fff; }
+.up { color:#00c05a; }
+.down { color:#ff0000; }
+.price-cell { text-align:right; width:120px; }
+.bg-red { background:#ff0000 !important; color:#fff; text-align:left; }
+.bg-green { background:#00c05a !important; color:#fff; text-align:left; }
+tbody tr:nth-child(even) { background:#080808; }
+.loading { text-align:center; padding:40px; color:#888; font-size:18px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <aside class="sidebar">
+    <div class="logo">BEESTOCK</div>
+    <nav class="menu-list">
+      <a href="#" class="menu-item">Home</a>
+      <a href="#" class="menu-item">Guru Portfolio</a>
+      <a href="#" class="menu-item">News</a>
+      <a href="#" class="menu-item">REITS</a>
+      <a href="#" class="menu-item">Peer Group Analysis</a>
+      <a href="#" class="menu-item">ETF Finder</a>
+      <a href="#" class="menu-item">Today Stock</a>
+      <a href="#" class="menu-item">Calendar</a>
+      <a href="#" class="menu-item">World Stock Market ETF</a>
+      <a href="#" class="menu-item">Volume Analysis</a>
+      <a href="#" class="menu-item">Promising Stock Ranking</a>
+    </nav>
+    <div class="ad-banner">
+      직원 휴게실이 좁아<br>고민이신<br>
+      <span class="red-text">사장님만<br>보세요!</span>
+    </div>
+  </aside>
+  <div class="main-content">
+    <header class="top-bar">
+      <div class="search-box">[ &nbsp;&nbsp;Search&nbsp;&nbsp;]</div>
+      <div class="window-ctrl"><div></div><div></div></div>
+    </header>
+    <section class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:250px">Name</th>
+            <th style="text-align:right">Price</th>
+            <th>1D %Chg ▽</th><th>5D ▽</th><th>1M ▽</th><th>3M ▽</th>
+            <th>6M ▽</th><th>YTD ▽</th><th>1Y ▽</th><th>3Y ▽</th>
+          </tr>
+        </thead>
+        <tbody id="stock-table">
+          <tr><td colspan="10" class="loading">Loading...</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</div>
+
+<script>
+const R2_URL = "https://pub-eed1c8c0810d45ad87388b7267ec0d00.r2.dev/stocks.json";
+
+async function loadStocks() {
+  try {
+    const res = await fetch(R2_URL);
+    const data = await res.json();
+    const tbody = document.getElementById("stock-table");
+    tbody.innerHTML = "";
+    data.forEach(s => {
+      const change = s.change_1d || 0;
+      const color = change >= 0 ? "up" : "down";
+      const sign = change >= 0 ? "+" : "";
+      let priceBg = "";
+      if (change <= -5) priceBg = "bg-red";
+      else if (change >= 5) priceBg = "bg-green";
+      tbody.innerHTML += `
+        <tr>
+          <td class="stock-name">${s.name}</td>
+          <td class="price-cell ${priceBg}">${s.price.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+          <td class="${color}">${sign}${change.toFixed(2)}%</td>
+          <td>-</td><td>-</td><td>-</td>
+          <td>-</td><td>-</td><td>-</td><td>-</td>
+        </tr>`;
+    });
+  } catch(e) {
+    document.getElementById("stock-table").innerHTML = '<tr><td colspan="10" class="loading">데이터를 불러올 수 없습니다.</td></tr>';
+  }
+}
+
+loadStocks();
+</script>
+</body>
+</html>
